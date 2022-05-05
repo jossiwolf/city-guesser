@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sample</title>
+</head>
+<style>
+    body { margin:0; padding:0; background-color: #FCFAF2;}
+
+    #wrapper {
+        overflow: auto;
+        /*position: fixed;*/
+    }
+    #map {
+        top:0;
+        bottom:0;
+        width: calc(100% - 300px);
+        height: 100vh;
+        background-color: black;
+        border-right: 1px solid darkgrey;
+        float:left
+    }
+    #section {
+        height: 100vh;
+        width: 279px;
+        overflow: auto;
+        background-color: #FCFAF2;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    input[type="submit"] {
+        background: #FF8082;
+        border: 1px solid;
+        border-color: #FCFAF2;
+        color: white;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-family: 'Josefin Sans', sans-serif;
+    }
+    h3 {
+        font-family: 'Josefin Sans', sans-serif;
+        font-size: 32px;
+        display: inline;
+    }
+    p {
+        display: inline;
+        font-family: 'Josefin Sans', sans-serif;
+    }
+
+    #att {
+        font-size: 12px;
+        padding: 7px;
+        border: 1px solid;
+        border-color: lightgrey;
+        background-color: #FCFAF2;
+    }
+    #att p {
+        color: grey;
+    }
+
+    #att a {
+        text-decoration: none;
+        color: #444444;
+    }
+</style>
+<body>
+<div id="root"></div>
+<script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.2/mapbox-gl.js"></script>
+<script src="cities_nat_500k3s.geojson"></script>
+<script src="CityGuesserApp.js"></script>
+</body>
+</html>
+
+"NullPointerException
+at THROW_NPE (webpack-internal:///./kotlin/kotlin_kotlin.js:6517:11)
+at ensureNotNull (webpack-internal:///./kotlin/kotlin_kotlin.js:6510:7)
+at renderComposable$composable (webpack-internal:///./kotlin/kotlin_org_jetbrains_compose_web_internal_web_core_runtime.js:342:15)
+at main (webpack-internal:///./kotlin/CityGuesserApp.js:269:5)
+at Object.eval (webpack-internal:///./kotlin/CityGuesserApp.js:2066:3)
+at eval (webpack-internal:///./kotlin/CityGuesserApp.js:5:37)
+at eval (webpack-internal:///./kotlin/CityGuesserApp.js:8:2)
+at Object../kotlin/CityGuesserApp.js (http://localhost:8080/CityGuesserApp.js:493:1)
+at __webpack_require__ (http://localhost:8080/CityGuesserApp.js:30:30)
+at Object.0 (http://localhost:8080/CityGuesserApp.js:593:18)"

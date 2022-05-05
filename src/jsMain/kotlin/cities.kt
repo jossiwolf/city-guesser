@@ -1,0 +1,1 @@
+external var cities: String
