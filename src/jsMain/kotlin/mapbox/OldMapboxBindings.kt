@@ -23,7 +23,10 @@ external object MapboxGl {
     var accessToken: String
 
     @JsName("Map")
-    class Map(options: dynamic)
+    class Map(options: dynamic) {
+        fun remove()
+        fun setCenter(center: Array<Double>)
+    }
 
     class FitBoundsOptions
 

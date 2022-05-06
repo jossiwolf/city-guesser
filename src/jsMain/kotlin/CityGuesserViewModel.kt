@@ -1,11 +1,14 @@
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import common.Lce
+import common.lce.Lce
+import domain.cities
 
 class CityGuesserViewModel {
     var state by mutableStateOf(CityGuesserAppState.initial())
         private set
+
+    private var alreadyGuessedCities = mutableListOf<String>()
 
     fun loadCities() {
         val filteredCities = cities.asDynamic().features.filter { feature ->
@@ -25,9 +28,11 @@ class CityGuesserViewModel {
             } else {
                 properties["SCALERANK"] < 12
             }
-        } as Array<Any>
+        } as Array<dynamic>
 
-        val candidateCities = filteredCities.toMutableList()
+        val candidateCities = filteredCities
+            .filter { it.properties["NAME"] as String !in alreadyGuessedCities }
+            .toMutableList()
 
         val fourPlaces = buildList<dynamic> {
             repeat(4) {
@@ -42,6 +47,7 @@ class CityGuesserViewModel {
             )
         }
         state = state.copy(
+            level = state.level + 1, // Simple assumption but works for now lol
             quizState = Lce.Content(
                 QuizState(
                     locations = fourPlaces,
@@ -64,6 +70,7 @@ class CityGuesserViewModel {
             )
         )
         if (answerCorrect) {
+            alreadyGuessedCities += quizState.data.correctLocation.cityName
             loadCities()
         }
     }

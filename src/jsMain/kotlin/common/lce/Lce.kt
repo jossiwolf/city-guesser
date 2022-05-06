@@ -1,4 +1,4 @@
-package common
+package common.lce
 
 sealed interface Lce<out T> {
     object Loading: Lce<Nothing>

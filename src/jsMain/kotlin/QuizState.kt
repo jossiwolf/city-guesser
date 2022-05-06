@@ -1,5 +1,5 @@
 import androidx.compose.runtime.Stable
-import common.Lce
+import common.lce.Lce
 import mapbox.Location
 
 @Stable

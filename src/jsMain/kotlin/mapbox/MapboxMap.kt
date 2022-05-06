@@ -1,15 +1,19 @@
 package mapbox
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import org.jetbrains.compose.web.dom.Div
 
 @Composable
 fun MapboxMap(state: MapboxMapState) {
-    LaunchedEffect(state) {
+    // We should update the center instead of recreating the whole map here
+    DisposableEffect(state) {
         MapboxGl.accessToken =
             "pk.eyJ1IjoiamVmZmFsbGVuIiwiYSI6ImNrbGgyMXFjaDB6aXoyd29pNmF4NTRyMWwifQ.vwE_3WfPjbTW8cMoDKbq6A"
-        state.attach(state.createMap("map"))
+        val map = state.createMap("map")
+        onDispose {
+            map.remove()
+        }
     }
     Div(attrs = {
         id("map")
