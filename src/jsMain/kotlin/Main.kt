@@ -1,14 +1,14 @@
 import androidx.compose.runtime.*
 import common.Button
-import common.WebCompat
-import common.lce.Lce
+import common.FlexColumn
+import common.FlexRow
 import common.lce.LceDataView
 import common.renderWebCompatComposable
 import mapbox.MapboxMap
 import mapbox.rememberMapboxMapState
 import org.jetbrains.compose.web.ExperimentalComposeWebApi
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
-import org.jetbrains.compose.web.renderComposable
 
 fun main() {
     val viewModel = CityGuesserViewModel()
@@ -21,21 +21,29 @@ fun main() {
     }
 }
 
+
 @Composable
 fun CityGuesserApp(
     state: CityGuesserAppState,
     answerSubmitted: (selectedAnswer: QuizLocation) -> Unit
 ) {
     LceDataView(state = state.quizState) { quizState ->
-        val mapState = rememberMapboxMapState(center = quizState.correctLocation.asMapLocation())
-        Text("Level ${state.level}")
-        Br()
-        Quiz(quizState, answerSubmitted)
-        when (quizState.answerCorrect) {
-            true -> Text("WHOHOO")
-            false -> Text("BOOOOH")
+
+        FlexRow {
+            val mapState = rememberMapboxMapState(center = quizState.correctLocation.asMapLocation())
+            MapboxMap(mapState)
+            FlexColumn {
+                H3 { Text("City-Guesser") }
+                Text("Level ${state.level}")
+                Br()
+                Text("Score ${state.score}")
+                Quiz(quizState, answerSubmitted)
+                when (quizState.answerCorrect) {
+                    true -> Text("WHOHOO")
+                    false -> Text("BOOOOH")
+                }
+            }
         }
-        MapboxMap(mapState)
     }
 }
 
@@ -48,11 +56,13 @@ fun AnswerOptions(
 ) {
     RadioGroup(checkedValue = selectedLocation?.cityName) {
         locations.forEach { location ->
-            RadioInput(location.cityName) {
-                onChange { answerSelected(location) }
+            FlexRow {
+                RadioInput(location.cityName) {
+                    classes("location_input")
+                    onChange { answerSelected(location) }
+                }
+                Text(location.cityName)
             }
-            Text(location.cityName)
-            Br()
         }
     }
 }
@@ -66,7 +76,22 @@ fun Quiz(quizState: QuizState, answerSubmitted: (selectedAnswer: QuizLocation) -
         answerSelected = { location -> selectedLocation = location }
     )
     Br()
-    Button(onClick = { selectedLocation?.let(answerSubmitted) }) {
+    Button(
+        onClick = { selectedLocation?.let(answerSubmitted) },
+        attrs = {
+            style {
+                background("#FF8082")
+                border {
+                    style = LineStyle.Solid
+                    width = 1.px
+                    color = Color.white
+                }
+                color(Color.white)
+                padding(10.px, 14.px)
+                cursor("pointer")
+            }
+        }
+    ) {
         Text("Submit Answer")
     }
 }
