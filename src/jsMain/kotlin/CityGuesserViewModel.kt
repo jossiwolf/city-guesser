@@ -10,6 +10,11 @@ class CityGuesserViewModel {
 
     private var alreadyGuessedCities = mutableListOf<String>()
 
+    private data class RawQuizLocation(
+        val quizLocation: QuizLocation,
+        val rawValue: dynamic
+    )
+
     fun loadCities() {
         val filteredCities = cities.asDynamic().features.filter { feature ->
             val properties = feature.properties
@@ -41,17 +46,32 @@ class CityGuesserViewModel {
                 candidateCities.remove(randomPlace)
             }
         }.map { location ->
-            QuizLocation(
-                cityName = location.properties["NAME"] as String,
-                coords = location.geometry.coordinates as Array<Double>
+            RawQuizLocation(
+                quizLocation = QuizLocation(
+                    cityName = location.properties["NAME"] as String,
+                    coords = location.geometry.coordinates as Array<Double>
+                ),
+                rawValue = location
             )
         }
+
+        val correctLocation = fourPlaces.random()
+        val worldCityScore = correctLocation.rawValue.properties["WORLDCITY"] as Number
+        val scaleRankScore = correctLocation.rawValue.properties["SCALERANK"] as Number
+        val newScore = when (state.level) {
+            0 -> 0
+            else -> 100 * (5 + 5 * (1 - worldCityScore.toInt()) + scaleRankScore.toInt())
+        }
+
+        val displayablePlaces = fourPlaces.map(RawQuizLocation::quizLocation)
+
         state = state.copy(
-            level = state.level + 1, // Simple assumption but works for now lol
+            level = state.level + 1, // Simple assumption but works for now lol,
+            score = state.score + newScore,
             quizState = Lce.Content(
                 QuizState(
-                    locations = fourPlaces,
-                    correctLocation = fourPlaces.random(),
+                    locations = displayablePlaces,
+                    correctLocation = correctLocation.quizLocation,
                     answerCorrect = null
                 )
             )
@@ -71,7 +91,9 @@ class CityGuesserViewModel {
         )
         if (answerCorrect) {
             alreadyGuessedCities += quizState.data.correctLocation.cityName
-            loadCities()
+        } else {
+            state = CityGuesserAppState.initial()
         }
+        loadCities()
     }
 }
