@@ -1,3 +1,5 @@
+package app
+
 import androidx.compose.runtime.Stable
 import common.lce.Lce
 import mapbox.Location

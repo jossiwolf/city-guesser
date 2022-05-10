@@ -1,13 +1,12 @@
+package app
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import common.lce.Lce
 import data.CitiesRepository
-import domain.cities
 import io.data2viz.geojson.Feature
-import io.data2viz.geojson.FeatureCollection
 import io.data2viz.geojson.Point
-import io.data2viz.geojson.js.asGeoJsonObject
 
 external interface CityGuesserFeatureProperties {
 
