@@ -1,13 +1,16 @@
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.dp
 import common.Button
 import common.FlexColumn
 import common.FlexRow
 import common.lce.LceDataView
 import common.renderWebCompatComposable
-import mapbox.MapboxMap
-import mapbox.MapboxMapState
-import mapbox.rememberMapboxMapState
+import kotlinx.coroutines.launch
+import mapbox.*
 import org.jetbrains.compose.web.ExperimentalComposeWebApi
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -15,17 +18,13 @@ import org.jetbrains.compose.web.dom.*
 fun main() {
     val viewModel = CityGuesserViewModel()
     renderWebCompatComposable(rootElementId = "root") {
+        val scope = rememberCoroutineScope()
         LaunchedEffect(viewModel) { viewModel.loadCities() }
         CityGuesserApp(
             state = viewModel.state,
-            answerSubmitted = viewModel::verifyAnswer
+            answerSubmitted = { answer -> scope.launch { viewModel.verifyAnswer(answer) } }
         )
     }
-}
-
-@Composable
-fun CoolMap(mapState: MapboxMapState) {
-    MapboxMap(mapState)
 }
 
 @Composable
@@ -35,8 +34,20 @@ fun CityGuesserApp(
 ) {
     LceDataView(state = state.quizState) { quizState ->
         FlexRow {
-            val mapState = rememberMapboxMapState(center = quizState.correctLocation.asMapLocation())
-            CoolMap((mapState))
+            val mapState = rememberMapboxMapState(
+                center = quizState.correctLocation.asMapLocation(),
+                maxBounds = quizState.correctLocation.bounds
+            )
+            val navigationControl = remember { MapboxGl.NavigationControl() }
+            val scaleControl = remember { ScaleControl() }
+            MapboxMap(
+                state = mapState,
+                onMapReady = { map ->
+                    map.addControl(navigationControl, NavigationControlPosition.TopStart)
+                    map.addControl(scaleControl)
+                    map.dragRotateOptions.pitchWithRotate = false
+                }
+            )
             FlexColumn(
                 attrs = {
                     style {
@@ -56,6 +67,8 @@ fun CityGuesserApp(
                     true -> Text("WHOHOO")
                     false -> Text("BOOOOH")
                 }
+                Br()
+                Attribution()
             }
         }
     }
@@ -75,7 +88,8 @@ fun AnswerOptions(
                     classes("location_input")
                     onChange { answerSelected(location) }
                 }
-                Text(location.cityName)
+                B { Text(location.cityName) }
+                Text(", ${location.countryName}")
             }
         }
     }
@@ -107,5 +121,27 @@ fun Quiz(quizState: QuizState, answerSubmitted: (selectedAnswer: QuizLocation) -
         }
     ) {
         Text("Submit Answer")
+    }
+}
+
+@Composable
+fun Attribution() {
+    Div(
+        attrs = {
+            style {
+                fontSize(12.px)
+                padding(8.px)
+                border(1.px, LineStyle.Solid, Color.lightgray)
+                background("#FCFAF2")
+            }
+        }
+    ) {
+        Text("Source code for this map is on ")
+        A(href ="https://github.com/jossiwolf/CityGuesserApp/") { Text("Github") }
+        Br()
+        Text(" It was built by ")
+        A(href = "https://github.com/jossiwolf/") { Text("Jossi Wolf") }
+        Text(" after ")
+        A(href = "https://jamaps.github.io/") { Text("Jeff Allen's version.") }
     }
 }

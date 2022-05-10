@@ -2,26 +2,56 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import common.lce.Lce
+import data.CitiesRepository
 import domain.cities
+import io.data2viz.geojson.Feature
+import io.data2viz.geojson.FeatureCollection
+import io.data2viz.geojson.Point
+import io.data2viz.geojson.js.asGeoJsonObject
 
-data class GeoJsonFeatureCollection(
-    val features: List<GeoJsonFeature>
-)
+external interface CityGuesserFeatureProperties {
 
-data class GeoJsonFeature(
-    val type: String,
-    val geometry: GeoJsonGeometry<>
-    )
+    /**
+     * The country the feature is located in.
+     */
+    @JsName("ADM0NAME")
+    val country: String
 
-typealias GeoJsonProperties<V> = Map<String, V>
+    /**
+     * Whether the feature is considered a megacity
+     */
+    @JsName("MEGACITY")
+    val isMegacity: Int
 
-data class GeoJsonGeometry<P>(
-    val type: String,
-    val coordinates: List<Double>,
-    val properties: P
-)
+    /**
+     * The scale at which the feature shows up on a map when zooming in
+     * https://www.naturalearthdata.com/forums/topic/definition-of-scale-rank-appropriate-attribute-for-size-based-styling/
+     */
+    @JsName("SCALERANK")
+    val minZoom: Int
 
-class CityGuesserViewModel {
+    /**
+     * The feature's name, non-ascii
+     */
+    @JsName("NAME")
+    val name: String
+
+    /**
+     * The total population of the feature
+     */
+    @JsName("GN_POP")
+    val population: Int
+
+    /**
+     * Whether the feature is a "world city". That seems to mean.. relevant to the world? idk..
+     */
+    @JsName("WORLDCITY")
+    val isWorldCity: Double
+}
+
+class CityGuesserViewModel(
+    private val citiesRepository: CitiesRepository = CitiesRepository()
+) {
     var state by mutableStateOf(CityGuesserAppState.initial())
         private set
 
@@ -29,61 +59,66 @@ class CityGuesserViewModel {
 
     private data class RawQuizLocation(
         val quizLocation: QuizLocation,
-        val rawValue: dynamic
+        val rawValue: Feature
     )
 
-    fun loadCities() {
-        val filteredCities = cities.asDynamic().features.filter { feature ->
-            val properties = feature.properties
+    suspend fun loadCities() {
+        val allCities = citiesRepository.getCities()
+        val filteredFeatures = allCities.features.filter { feature ->
+            val properties = feature.properties.unsafeCast<CityGuesserFeatureProperties>()
             if (state.level < 10) {
-                properties["WORLDCITY"] > 0
+                properties.isWorldCity > 0
             } else if (state.level in 10..19) {
-                properties["SCALERANK"] < 3
+                properties.minZoom < 3
             } else if (state.level in 20..29) {
-                properties["MEGACITY"] > 0
+                properties.isMegacity > 0
             } else if (state.level in 30..39) {
-                properties["GN_POP"] > 3_000_000
+                properties.population > 3_000_000
             } else if (state.level in 40..49) {
-                properties["GN_POP"] > 2_000_000
+                properties.population > 2_000_000
             } else if (state.level in 50..59) {
-                properties["SCALERANK"] < 5
+                properties.minZoom < 5
             } else {
-                properties["SCALERANK"] < 12
+                properties.minZoom < 12
             }
-        } as Array<dynamic>
+        }
 
-        val candidateCities = filteredCities
-            .filter { it.properties["NAME"] as String !in alreadyGuessedCities }
+        val candidateCities = filteredFeatures
+            .filter { it.properties.unsafeCast<CityGuesserFeatureProperties>().name !in alreadyGuessedCities }
             .toMutableList()
 
-        val fourPlaces = buildList<dynamic> {
+        val fourPlaces = buildList {
             repeat(4) {
                 val randomPlace = candidateCities.random()
                 add(randomPlace)
                 candidateCities.remove(randomPlace)
             }
         }.map { location ->
+            val geometry = location.geometry as Point
+            val properties = location.properties.unsafeCast<CityGuesserFeatureProperties>()
             RawQuizLocation(
                 quizLocation = QuizLocation(
-                    cityName = location.properties["NAME"] as String,
-                    coords = location.geometry.coordinates as Array<Double>
+                    cityName = properties.name,
+                    countryName = properties.country,
+                    coords = geometry.coordinates.toList()
                 ),
                 rawValue = location
             )
         }
 
         val correctLocation = fourPlaces.random()
-        val worldCityScore = correctLocation.rawValue.properties["WORLDCITY"] as Number
-        val scaleRankScore = correctLocation.rawValue.properties["SCALERANK"] as Number
+        val correctLocationProperties = correctLocation.rawValue.properties.unsafeCast<CityGuesserFeatureProperties>()
+        val worldCityScore = correctLocationProperties.isWorldCity
+        val scaleRankScore = correctLocationProperties.minZoom
         val newScore = when (state.level) {
             0 -> 0
-            else -> 100 * (5 + 5 * (1 - worldCityScore.toInt()) + scaleRankScore.toInt())
+            else -> 100 * (5 + 5 * (1 - worldCityScore.toInt()) + scaleRankScore)
         }
 
         val displayablePlaces = fourPlaces.map(RawQuizLocation::quizLocation)
 
         state = state.copy(
-            level = state.level + 1, // Simple assumption but works for now lol,
+            level = state.level + 1,
             score = state.score + newScore,
             quizState = Lce.Content(
                 QuizState(
@@ -95,7 +130,7 @@ class CityGuesserViewModel {
         )
     }
 
-    fun verifyAnswer(answer: QuizLocation) {
+    suspend fun verifyAnswer(answer: QuizLocation) {
         val quizState = state.quizState
         require(quizState is Lce.Content)
         val answerCorrect = answer == quizState.data.correctLocation

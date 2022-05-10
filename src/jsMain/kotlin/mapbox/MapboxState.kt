@@ -7,11 +7,14 @@ import androidx.compose.runtime.remember
 //import mapbox.mapbox.MapboxMapOptions
 
 @Composable
-fun rememberMapboxMapState(center: Location) = remember(center) {
+fun rememberMapboxMapState(
+    center: Location,
+    maxBounds: List<List<Double>>
+) = remember(center) {
     MapboxMapState(
         style = "mapbox://styles/jeffallen/cj8rwyt7obvqq2sr8ygoi9dh2",
         center = center.jsCompatible(),
-        maxBounds = emptyList()
+        maxBounds = maxBounds
     )
 }
 
@@ -46,9 +49,11 @@ class MapboxMapState(
             }
             this.minZoom = minZoom
             this.maxZoom = maxZoom
-            //this.maxBounds = maxBounds
+            this.maxBounds = maxBounds.toTypedArray()
         }
     )
+
+    private fun<T> List<List<T>>.toTypedArray() = map { it.toTypedArray() }.toTypedArray()
 
     fun attach(map: MapboxGl.Map) {
         this.map = map

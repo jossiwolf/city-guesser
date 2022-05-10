@@ -1,3 +1,5 @@
 package domain
 
-external var cities: String
+import io.data2viz.geojson.js.Typed
+
+external var cities: Typed

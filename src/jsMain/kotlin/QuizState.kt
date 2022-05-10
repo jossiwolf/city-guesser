@@ -11,7 +11,12 @@ data class QuizState(
 
 data class QuizLocation(
     val cityName: String,
-    val coords: Array<Double>
+    val countryName: String,
+    val coords: List<Double>,
+    val bounds: List<List<Double>> = listOf(
+        listOf(coords[0] - 0.42, coords[1] + 0.42),
+        listOf(coords[0] + 0.42, coords[1] - 0.42)
+    )
 )
 
 @Stable

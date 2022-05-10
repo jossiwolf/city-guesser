@@ -12,7 +12,7 @@ repositories {
     google()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    //maven("https://maven.pkg.jetbrains.space/data2viz/p/maven/public")
+    maven("https://maven.pkg.jetbrains.space/data2viz/p/maven/public")
 }
 
 kotlin {
@@ -35,6 +35,7 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.ui)
                 implementation(compose.foundation)
+                implementation("io.data2viz.geojson:core:0.6.4")
                 //implementation(npm("mapbox-gl", "2.8.2", generateExternals = true))
                 //implementation(npm("@types/mapbox-gl", "2.7.1", generateExternals = true))
             }
