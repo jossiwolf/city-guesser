@@ -4,6 +4,23 @@ import androidx.compose.runtime.setValue
 import common.lce.Lce
 import domain.cities
 
+data class GeoJsonFeatureCollection(
+    val features: List<GeoJsonFeature>
+)
+
+data class GeoJsonFeature(
+    val type: String,
+    val geometry: GeoJsonGeometry<>
+    )
+
+typealias GeoJsonProperties<V> = Map<String, V>
+
+data class GeoJsonGeometry<P>(
+    val type: String,
+    val coordinates: List<Double>,
+    val properties: P
+)
+
 class CityGuesserViewModel {
     var state by mutableStateOf(CityGuesserAppState.initial())
         private set

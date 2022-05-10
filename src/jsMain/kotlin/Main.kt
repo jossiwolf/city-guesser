@@ -1,10 +1,12 @@
 import androidx.compose.runtime.*
+import androidx.compose.ui.layout.Layout
 import common.Button
 import common.FlexColumn
 import common.FlexRow
 import common.lce.LceDataView
 import common.renderWebCompatComposable
 import mapbox.MapboxMap
+import mapbox.MapboxMapState
 import mapbox.rememberMapboxMapState
 import org.jetbrains.compose.web.ExperimentalComposeWebApi
 import org.jetbrains.compose.web.css.*
@@ -21,6 +23,10 @@ fun main() {
     }
 }
 
+@Composable
+fun CoolMap(mapState: MapboxMapState) {
+    MapboxMap(mapState)
+}
 
 @Composable
 fun CityGuesserApp(
@@ -28,15 +34,23 @@ fun CityGuesserApp(
     answerSubmitted: (selectedAnswer: QuizLocation) -> Unit
 ) {
     LceDataView(state = state.quizState) { quizState ->
-
         FlexRow {
             val mapState = rememberMapboxMapState(center = quizState.correctLocation.asMapLocation())
-            MapboxMap(mapState)
-            FlexColumn {
+            CoolMap((mapState))
+            FlexColumn(
+                attrs = {
+                    style {
+                        padding(12.px)
+                    }
+                }
+            ) {
                 H3 { Text("City-Guesser") }
+                Br()
                 Text("Level ${state.level}")
                 Br()
                 Text("Score ${state.score}")
+                Br()
+                Br()
                 Quiz(quizState, answerSubmitted)
                 when (quizState.answerCorrect) {
                     true -> Text("WHOHOO")
