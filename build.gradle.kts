@@ -25,6 +25,9 @@ kotlin {
                     useFirefox()
                 }
             }
+            dceTask {
+                dceOptions.devMode = true
+            }
         }
         binaries.executable()
     }
