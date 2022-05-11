@@ -1,23 +1,22 @@
 package app
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import common.Button
 import common.FlexColumn
 import common.FlexRow
 import common.lce.LceDataView
 import mapbox.*
 import org.jetbrains.compose.web.ExperimentalComposeWebApi
+import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+import org.w3c.dom.HTMLButtonElement
 
 @Composable
 fun CityGuesserApp(
     state: CityGuesserAppState,
-    answerSubmitted: (selectedAnswer: QuizLocation) -> Unit
+    answerSubmitted: (selectedAnswer: QuizLocation) -> Unit,
+    playAgain: () -> Unit
 ) {
     LceDataView(state = state.quizState) { quizState ->
         FlexRow {
@@ -49,11 +48,11 @@ fun CityGuesserApp(
                 Text("Score ${state.score}")
                 Br()
                 Br()
-                Quiz(quizState, answerSubmitted)
-                when (quizState.answerCorrect) {
-                    true -> Text("WHOHOO")
-                    false -> Text("BOOOOH")
-                }
+                Quiz(
+                    quizState = quizState,
+                    submitAnswer = answerSubmitted,
+                    playAgain = playAgain
+                )
                 Br()
                 Attribution()
             }
@@ -65,6 +64,7 @@ fun CityGuesserApp(
 @Composable
 private fun AnswerOptions(
     locations: List<QuizLocation>,
+    inputEnabled: Boolean,
     selectedLocation: QuizLocation?,
     answerSelected: (location: QuizLocation) -> Unit
 ) {
@@ -74,6 +74,9 @@ private fun AnswerOptions(
                 RadioInput(location.cityName) {
                     classes("location_input")
                     onChange { answerSelected(location) }
+                    if (!inputEnabled) {
+                        disabled()
+                    }
                 }
                 B { Text(location.cityName) }
                 Text(", ${location.countryName}")
@@ -83,16 +86,39 @@ private fun AnswerOptions(
 }
 
 @Composable
-private fun Quiz(quizState: QuizState, answerSubmitted: (selectedAnswer: QuizLocation) -> Unit) {
+private fun Quiz(
+    quizState: QuizState,
+    submitAnswer: (selectedAnswer: QuizLocation) -> Unit,
+    playAgain: () -> Unit
+) {
     var selectedLocation by remember { mutableStateOf<QuizLocation?>(null) }
     AnswerOptions(
         locations = quizState.locations,
+        inputEnabled = quizState.answerCorrect != false,
         selectedLocation = selectedLocation,
         answerSelected = { location -> selectedLocation = location }
     )
     Br()
+    when (quizState.answerCorrect) {
+        null -> CityGuesserButton(onClick = { selectedLocation?.let(submitAnswer) }) {
+            Text("Submit Answer")
+        }
+        false -> {
+            Text("Wrong answer! The correct answer was ${quizState.correctLocation.cityName}, ${quizState.correctLocation.countryName}.")
+            CityGuesserButton(onClick = playAgain) {
+                Text("Play again!")
+            }
+        }
+    }
+}
+
+@Composable
+private fun CityGuesserButton(
+    onClick: () -> Unit,
+    content: @Composable ElementScope<HTMLButtonElement>.() -> Unit
+) {
     Button(
-        onClick = { selectedLocation?.let(answerSubmitted) },
+        onClick = onClick,
         attrs = {
             style {
                 background("#FF8082")
@@ -105,10 +131,9 @@ private fun Quiz(quizState: QuizState, answerSubmitted: (selectedAnswer: QuizLoc
                 padding(10.px, 14.px)
                 cursor("pointer")
             }
-        }
-    ) {
-        Text("Submit Answer")
-    }
+        },
+        content = content
+    )
 }
 
 @Composable
@@ -124,7 +149,7 @@ private fun Attribution() {
         }
     ) {
         Text("Source code for this map is on ")
-        A(href ="https://github.com/jossiwolf/CityGuesserApp/") { Text("Github") }
+        A(href = "https://github.com/jossiwolf/CityGuesserApp/") { Text("Github") }
         Br()
         Text(" It was built by ")
         A(href = "https://github.com/jossiwolf/") { Text("Jossi Wolf") }

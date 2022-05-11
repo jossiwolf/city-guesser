@@ -23,7 +23,7 @@ class CityGuesserViewModel(
         val rawValue: Feature
     )
 
-    suspend fun getCitiesForLevel(
+    fun getCitiesForLevel(
         features: Array<Feature>,
         level: Int
     ): List<Feature> = features.filter { feature ->
@@ -109,9 +109,12 @@ class CityGuesserViewModel(
         )
         if (answerCorrect) {
             alreadyGuessedCities += quizState.data.correctLocation.cityName
-        } else {
-            state = CityGuesserAppState.initial()
+            loadCities()
         }
+    }
+
+    suspend fun playAgain() {
+        state = CityGuesserAppState.initial()
         loadCities()
     }
 }

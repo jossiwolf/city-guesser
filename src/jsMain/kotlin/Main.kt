@@ -12,7 +12,8 @@ fun main() {
         LaunchedEffect(viewModel) { viewModel.loadCities() }
         CityGuesserApp(
             state = viewModel.state,
-            answerSubmitted = { answer -> scope.launch { viewModel.verifyAnswer(answer) } }
+            answerSubmitted = { answer -> scope.launch { viewModel.verifyAnswer(answer) } },
+            playAgain = { scope.launch { viewModel.playAgain() } }
         )
     }
 }
