@@ -1,6 +1,5 @@
-package data
+package domain
 
-import domain.cities
 import io.data2viz.geojson.FeatureCollection
 import io.data2viz.geojson.js.asGeoJsonObject
 

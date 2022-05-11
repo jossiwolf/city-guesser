@@ -25,10 +25,11 @@ data class QuizLocation(
 data class CityGuesserAppState(
     val level: Int,
     val score: Int,
+    val highScore: Int,
     val quizState: Lce<QuizState>
 ) {
     companion object {
-        fun initial() = CityGuesserAppState(level = 0, quizState = Lce.Loading, score = 0)
+        fun initial() = CityGuesserAppState(level = 0, quizState = Lce.Loading, score = 0, highScore = 0)
     }
 }
 

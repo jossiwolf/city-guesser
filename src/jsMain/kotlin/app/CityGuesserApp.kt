@@ -54,6 +54,9 @@ fun CityGuesserApp(
                     playAgain = playAgain
                 )
                 Br()
+                Text("Your Highscore: ${state.highScore}")
+                Br()
+                Br()
                 Attribution()
             }
         }

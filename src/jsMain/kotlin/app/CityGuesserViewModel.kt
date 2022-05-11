@@ -4,14 +4,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import common.lce.Lce
-import data.CitiesRepository
+import domain.CitiesRepository
 import data.CityGuesserFeatureProperties
+import domain.HighScoreRepository
 import io.data2viz.geojson.Feature
-import io.data2viz.geojson.FeatureCollection
 import io.data2viz.geojson.Point
 
 class CityGuesserViewModel(
-    private val citiesRepository: CitiesRepository = CitiesRepository()
+    private val citiesRepository: CitiesRepository = CitiesRepository(),
+    private val highScoreRepository: HighScoreRepository = HighScoreRepository()
 ) {
     var state by mutableStateOf(CityGuesserAppState.initial())
         private set
@@ -82,10 +83,12 @@ class CityGuesserViewModel(
         }
 
         val displayablePlaces = fourPlaces.map(RawQuizLocation::quizLocation)
+        val highScore = highScoreRepository.getHighScore()
 
         state = state.copy(
             level = state.level + 1,
             score = state.score + newScore,
+            highScore = highScore,
             quizState = Lce.Content(
                 QuizState(
                     locations = displayablePlaces,
@@ -107,6 +110,7 @@ class CityGuesserViewModel(
                 )
             )
         )
+        saveHighScore(state.score)
         if (answerCorrect) {
             alreadyGuessedCities += quizState.data.correctLocation.cityName
             loadCities()
@@ -116,5 +120,9 @@ class CityGuesserViewModel(
     suspend fun playAgain() {
         state = CityGuesserAppState.initial()
         loadCities()
+    }
+
+    suspend fun saveHighScore(score: Int) {
+        highScoreRepository.saveHighScore(score)
     }
 }
