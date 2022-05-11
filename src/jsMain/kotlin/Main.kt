@@ -1,4 +1,5 @@
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import app.CityGuesserApp
 import app.CityGuesserViewModel
 import common.renderWebCompatComposable
