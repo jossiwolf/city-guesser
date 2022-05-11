@@ -5,48 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import common.lce.Lce
 import data.CitiesRepository
+import data.CityGuesserFeatureProperties
 import io.data2viz.geojson.Feature
+import io.data2viz.geojson.FeatureCollection
 import io.data2viz.geojson.Point
-
-external interface CityGuesserFeatureProperties {
-
-    /**
-     * The country the feature is located in.
-     */
-    @JsName("ADM0NAME")
-    val country: String
-
-    /**
-     * Whether the feature is considered a megacity
-     */
-    @JsName("MEGACITY")
-    val isMegacity: Int
-
-    /**
-     * The scale at which the feature shows up on a map when zooming in
-     * https://www.naturalearthdata.com/forums/topic/definition-of-scale-rank-appropriate-attribute-for-size-based-styling/
-     */
-    @JsName("SCALERANK")
-    val minZoom: Int
-
-    /**
-     * The feature's name, non-ascii
-     */
-    @JsName("NAME")
-    val name: String
-
-    /**
-     * The total population of the feature
-     */
-    @JsName("GN_POP")
-    val population: Int
-
-    /**
-     * Whether the feature is a "world city". That seems to mean.. relevant to the world? idk..
-     */
-    @JsName("WORLDCITY")
-    val isWorldCity: Double
-}
 
 class CityGuesserViewModel(
     private val citiesRepository: CitiesRepository = CitiesRepository()
@@ -61,26 +23,31 @@ class CityGuesserViewModel(
         val rawValue: Feature
     )
 
+    suspend fun getCitiesForLevel(
+        features: Array<Feature>,
+        level: Int
+    ): List<Feature> = features.filter { feature ->
+        val properties = feature.properties.unsafeCast<CityGuesserFeatureProperties>()
+        if (level < 10) {
+            properties.isWorldCity > 0
+        } else if (level in 10..19) {
+            properties.minZoom < 3
+        } else if (level in 20..29) {
+            properties.isMegacity > 0
+        } else if (level in 30..39) {
+            properties.population > 3_000_000
+        } else if (level in 40..49) {
+            properties.population > 2_000_000
+        } else if (level in 50..59) {
+            properties.minZoom < 5
+        } else {
+            properties.minZoom < 12
+        }
+    }
+
     suspend fun loadCities() {
         val allCities = citiesRepository.getCities()
-        val filteredFeatures = allCities.features.filter { feature ->
-            val properties = feature.properties.unsafeCast<CityGuesserFeatureProperties>()
-            if (state.level < 10) {
-                properties.isWorldCity > 0
-            } else if (state.level in 10..19) {
-                properties.minZoom < 3
-            } else if (state.level in 20..29) {
-                properties.isMegacity > 0
-            } else if (state.level in 30..39) {
-                properties.population > 3_000_000
-            } else if (state.level in 40..49) {
-                properties.population > 2_000_000
-            } else if (state.level in 50..59) {
-                properties.minZoom < 5
-            } else {
-                properties.minZoom < 12
-            }
-        }
+        val filteredFeatures = getCitiesForLevel(allCities.features, state.level)
 
         val candidateCities = filteredFeatures
             .filter { it.properties.unsafeCast<CityGuesserFeatureProperties>().name !in alreadyGuessedCities }
