@@ -22,7 +22,6 @@ kotlin {
                 testLogging.showStandardStreams = true
                 useKarma {
                     useChromeHeadless()
-                    useFirefox()
                 }
             }
             dceTask {
