@@ -3,10 +3,7 @@ package common
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import org.jetbrains.compose.web.attributes.AttrsScope
-import org.jetbrains.compose.web.css.DisplayStyle
-import org.jetbrains.compose.web.css.FlexDirection
-import org.jetbrains.compose.web.css.display
-import org.jetbrains.compose.web.css.flexDirection
+import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.w3c.dom.HTMLDivElement
 
@@ -25,7 +22,8 @@ fun FlexLayout(
             attrs()
             style {
                 display(DisplayStyle.Flex)
-                flexDirection(flexDirection)
+                // Doesn't use flexDirection because it breaks when compiling for prod
+                property("flex-direction", flexDirection.value)
             }
         }
     ) {
