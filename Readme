@@ -1,0 +1,6 @@
+A small clone of the [City-Guesser game](https://github.com/jamaps/city-guesser) by [Jeff Allen](https://github.com/jamaps/).
+
+Written in Kotlin/JS and using Compose for Web with HTML bindings.
+
+The map and data were adopted from the original.
+> The map was designed and built using Mapbox and QGIS, with data from OpenStreetMap and Natural Earth.
