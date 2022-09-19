@@ -1,4 +1,4 @@
-package mapbox
+package dom.mapbox
 
 import androidx.compose.runtime.Stable
 

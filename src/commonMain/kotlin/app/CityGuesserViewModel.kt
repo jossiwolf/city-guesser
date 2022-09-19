@@ -3,9 +3,9 @@ package app
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import common.lce.Lce
-import domain.CitiesRepository
+import lce.Lce
 import data.CityGuesserFeatureProperties
+import domain.CitiesRepository
 import domain.HighScoreRepository
 import io.data2viz.geojson.Feature
 import io.data2viz.geojson.Point

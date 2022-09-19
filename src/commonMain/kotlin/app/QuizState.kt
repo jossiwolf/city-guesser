@@ -1,8 +1,11 @@
 package app
 
 import androidx.compose.runtime.Stable
-import common.lce.Lce
-import mapbox.Location
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import lce.Lce
+import data.Location
 
 @Stable
 data class QuizState(
@@ -11,6 +14,7 @@ data class QuizState(
     val answerCorrect: Boolean?
 )
 
+@Stable
 data class QuizLocation(
     val cityName: String,
     val countryName: String,
@@ -34,3 +38,10 @@ data class CityGuesserAppState(
 }
 
 fun QuizLocation.asMapLocation() = Location(lng = coords[0], lat = coords[1])
+fun QuizLocation.formattedName() = buildAnnotatedString {
+    pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
+    append(cityName)
+    pop()
+    append(", ")
+    append(countryName)
+}

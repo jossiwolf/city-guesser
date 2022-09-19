@@ -2,6 +2,7 @@ package common
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import dom.DomComposable
 import org.jetbrains.compose.web.attributes.AttrsScope
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
@@ -12,6 +13,7 @@ interface FlexLayoutScope
 class HtmlFlexLayoutScope: FlexLayoutScope
 
 @Composable
+@DomComposable
 fun FlexLayout(
     flexDirection: FlexDirection,
     attrs: AttrsScope<HTMLDivElement>.() -> Unit = { },
@@ -22,7 +24,7 @@ fun FlexLayout(
             attrs()
             style {
                 display(DisplayStyle.Flex)
-                // Doesn't use flexDirection because it breaks when compiling for prod
+                // Doesn't use the flexDirection API because it breaks when compiling for prod
                 property("flex-direction", flexDirection.value)
             }
         }

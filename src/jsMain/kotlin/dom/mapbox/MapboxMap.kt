@@ -1,9 +1,25 @@
-package mapbox
+package dom.mapbox
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import org.jetbrains.compose.web.dom.Div
+import androidx.compose.runtime.*
+import androidx.compose.ui.layout.Layout
+import kotlinx.browser.document
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.web.attributes.*
+import org.jetbrains.compose.web.attributes.AttrsScopeBuilder
+import org.jetbrains.compose.web.css.StyleHolder
+import org.jetbrains.compose.web.css.StyleScope
+import org.jetbrains.compose.web.css.StyleScopeBuilder
+import org.jetbrains.compose.web.dom.*
+import org.jetbrains.compose.web.internal.runtime.*
+import org.jetbrains.compose.web.renderComposable
+import org.jetbrains.compose.web.renderComposableInBody
+import org.w3c.dom.Element
+import org.w3c.dom.HTMLElement
+import org.w3c.dom.Node
+import org.w3c.dom.css.ElementCSSInlineStyle
+import org.w3c.dom.svg.SVGElement
 
 @Composable
 fun MapboxMap(state: MapboxMapState, onMapReady: (map: MapboxGl.Map) -> Unit) {

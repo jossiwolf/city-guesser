@@ -1,10 +1,10 @@
-package mapbox
+package dom.mapbox
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
-
-//import mapbox.mapbox.MapboxMapOptions
+import common.jsObject
+import data.Location
 
 @Composable
 fun rememberMapboxMapState(
@@ -58,11 +58,4 @@ class MapboxMapState(
     fun attach(map: MapboxGl.Map) {
         this.map = map
     }
-}
-
-
-inline fun jsObject(init: dynamic.() -> Unit): dynamic {
-    val o = js("{}")
-    init(o)
-    return o
 }

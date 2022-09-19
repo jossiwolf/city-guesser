@@ -1,6 +1,5 @@
-package common
+package app
 
-import app.CityGuesserViewModel
 import io.data2viz.geojson.Geometry
 import io.data2viz.geojson.Position
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,10 +11,10 @@ class CityGuesserViewModelTest {
 
     @Test
     fun test_cities() = runTest {
-        /*val viewModel = CityGuesserViewModel()
+        val viewModel = CityGuesserViewModel()
         val city = Stub.City(lng = 0.0, lat = 0.0)
 
-        viewModel.getCitiesForLevel(arrayOf(city), 0)*/
+        viewModel.getCitiesForLevel(arrayOf(city), 0)
     }
 
 }

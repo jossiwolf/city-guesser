@@ -1,4 +1,4 @@
-package common.util
+package util
 
 import org.w3c.dom.Document
 

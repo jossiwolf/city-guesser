@@ -1,16 +1,18 @@
 package app
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material.*
 import androidx.compose.runtime.*
-import common.Button
-import common.FlexColumn
-import common.FlexRow
-import common.lce.LceDataView
-import mapbox.*
-import org.jetbrains.compose.web.ExperimentalComposeWebApi
-import org.jetbrains.compose.web.attributes.disabled
-import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.*
-import org.w3c.dom.HTMLButtonElement
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import lce.Lce
+import lce.LceDataView
 
 @Composable
 fun CityGuesserApp(
@@ -18,82 +20,66 @@ fun CityGuesserApp(
     answerSubmitted: (selectedAnswer: QuizLocation) -> Unit,
     playAgain: () -> Unit
 ) {
-    LceDataView(state = state.quizState) { quizState ->
-        FlexRow {
-            val mapState = rememberMapboxMapState(
-                center = quizState.correctLocation.asMapLocation(),
-                maxBounds = quizState.correctLocation.bounds
-            )
-            val navigationControl = remember { MapboxGl.NavigationControl() }
-            val scaleControl = remember { ScaleControl() }
-            MapboxMap(
-                state = mapState,
-                onMapReady = { map ->
-                    map.addControl(navigationControl, NavigationControlPosition.TopStart)
-                    map.addControl(scaleControl)
-                    map.dragRotateOptions.pitchWithRotate = false
-                }
-            )
-            FlexColumn(
-                attrs = {
-                    style {
-                        padding(12.px)
-                    }
-                }
+    CityGuesserAppLayout(
+        state = state.quizState,
+        map = { quizState ->
+            Text("Map unavailable")
+        },
+        quiz = { quizState ->
+            Column(
+                Modifier
+                    .fillMaxHeight()
+                    .border(1.dp, Color.Black)
+                    .padding(
+                        vertical = 32.dp,
+                        horizontal = 16.dp
+                    )
             ) {
-                H3 { Text("City-Guesser") }
-                Br()
-                Text("Level ${state.level}")
-                Br()
-                Text("Score ${state.score}")
-                Br()
-                Br()
+                Text("City-Guesser", style = CityGuesserTheme.typography.h4)
+                Spacer(Modifier.height(48.dp))
+                Text("Level ${state.level}", style = CityGuesserTheme.typography.body1)
+                Text("Score ${state.score}", style = CityGuesserTheme.typography.body1)
+                Spacer(Modifier.height(12.dp))
                 Quiz(
                     quizState = quizState,
                     submitAnswer = answerSubmitted,
                     playAgain = playAgain
                 )
-                Br()
-                Text("Your Highscore: ${state.highScore}")
-                Br()
-                Br()
+                Spacer(Modifier.height(8.dp))
+                Text("Your Highscore: ${state.highScore}", style = CityGuesserTheme.typography.caption)
+                Spacer(Modifier.height(8.dp))
                 Attribution()
+            }
+        }
+    )
+}
+
+@Composable
+private fun CityGuesserAppLayout(
+    state: Lce<QuizState>,
+    map: @Composable (state: QuizState) -> Unit,
+    quiz: @Composable (state: QuizState) -> Unit
+) {
+    LceDataView(state = state) { quizState ->
+        Row(Modifier.fillMaxWidth()) {
+            Box(Modifier.weight(.8f)) {
+                map(quizState)
+            }
+            Box(Modifier.weight(.2f)) {
+                quiz(quizState)
             }
         }
     }
 }
 
-@OptIn(ExperimentalComposeWebApi::class)
-@Composable
-private fun AnswerOptions(
-    locations: List<QuizLocation>,
-    inputEnabled: Boolean,
-    selectedLocation: QuizLocation?,
-    answerSelected: (location: QuizLocation) -> Unit
-) {
-    RadioGroup(checkedValue = selectedLocation?.cityName) {
-        locations.forEach { location ->
-            FlexRow {
-                RadioInput(location.cityName) {
-                    classes("location_input")
-                    onChange { answerSelected(location) }
-                    if (!inputEnabled) {
-                        disabled()
-                    }
-                }
-                B { Text(location.cityName) }
-                Text(", ${location.countryName}")
-            }
-        }
-    }
-}
+
 
 @Composable
 private fun Quiz(
     quizState: QuizState,
     submitAnswer: (selectedAnswer: QuizLocation) -> Unit,
     playAgain: () -> Unit
-) {
+) = Column {
     var selectedLocation by remember { mutableStateOf<QuizLocation?>(null) }
     AnswerOptions(
         locations = quizState.locations,
@@ -101,14 +87,19 @@ private fun Quiz(
         selectedLocation = selectedLocation,
         answerSelected = { location -> selectedLocation = location }
     )
-    Br()
+    Spacer(Modifier.height(32.dp))
     when (quizState.answerCorrect) {
-        null -> CityGuesserButton(onClick = { selectedLocation?.let(submitAnswer) }) {
+        null -> Button(
+            onClick = { selectedLocation?.let(submitAnswer) },
+            Modifier.fillMaxWidth(),
+        ) {
             Text("Submit Answer")
         }
+
+        true -> {}
         false -> {
             Text("Wrong answer! The correct answer was ${quizState.correctLocation.cityName}, ${quizState.correctLocation.countryName}.")
-            CityGuesserButton(onClick = playAgain) {
+            Button(onClick = playAgain, Modifier.fillMaxWidth()) {
                 Text("Play again!")
             }
         }
@@ -116,47 +107,43 @@ private fun Quiz(
 }
 
 @Composable
-private fun CityGuesserButton(
-    onClick: () -> Unit,
-    content: @Composable ElementScope<HTMLButtonElement>.() -> Unit
+private fun AnswerOptions(
+    locations: List<QuizLocation>,
+    inputEnabled: Boolean,
+    selectedLocation: QuizLocation?,
+    answerSelected: (location: QuizLocation) -> Unit
 ) {
-    Button(
-        onClick = onClick,
-        attrs = {
-            style {
-                background("#FF8082")
-                border {
-                    style = LineStyle.Solid
-                    width = 1.px
-                    color = Color.white
-                }
-                color(Color.white)
-                padding(10.px, 14.px)
-                cursor("pointer")
+    Column(Modifier.selectableGroup()) {
+        locations.forEach { location ->
+            Row(
+                Modifier
+                    .selectable(
+                        selected = location == selectedLocation,
+                        enabled = inputEnabled,
+                        onClick = { answerSelected(location) }
+                    )
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = location == selectedLocation,
+                    enabled = inputEnabled,
+                    onClick = null
+                )
+                Spacer(Modifier.width(8.dp))
+                val locationName = remember(location) { location.formattedName() }
+                Text(locationName)
             }
-        },
-        content = content
-    )
+        }
+    }
 }
 
 @Composable
 private fun Attribution() {
-    Div(
-        attrs = {
-            style {
-                fontSize(12.px)
-                padding(8.px)
-                border(1.px, LineStyle.Solid, Color.lightgray)
-                background("#FCFAF2")
-            }
+    Surface(color = MaterialTheme.colors.background, border = BorderStroke(1.dp, MaterialTheme.colors.onSurface)) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Source code for this map is on GitHub: https://github.com/jossiwolf/CityGuesserApp/")
+            Text("It was built by Jossi Wolf after Jeff Allen's version (https://jamaps.github.io/)")
         }
-    ) {
-        Text("Source code for this map is on ")
-        A(href = "https://github.com/jossiwolf/CityGuesserApp/") { Text("Github") }
-        Br()
-        Text(" It was built by ")
-        A(href = "https://github.com/jossiwolf/") { Text("Jossi Wolf") }
-        Text(" after ")
-        A(href = "https://jamaps.github.io/") { Text("Jeff Allen's version.") }
     }
 }

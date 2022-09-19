@@ -1,14 +1,14 @@
 package common
 
-import common.util.requireBody
-import common.util.runCatchingOrNull
+import util.requireBody
+import util.runCatchingOrNull
 import kotlinx.browser.document
 import kotlinx.dom.appendElement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class WebCompatTest {
+class RenderComposableTest {
 
     @Test
     fun requireRootElementHasId_rootWithCorrectId_noException() {
