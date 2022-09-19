@@ -4,11 +4,13 @@ import io.data2viz.geojson.Geometry
 import io.data2viz.geojson.Position
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CityGuesserViewModelTest {
 
+    @Ignore
     @Test
     fun test_cities() = runTest {
         val viewModel = CityGuesserViewModel()

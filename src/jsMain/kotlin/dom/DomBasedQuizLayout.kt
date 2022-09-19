@@ -11,7 +11,7 @@ import org.jetbrains.compose.web.dom.*
 
 @DomComposable
 @Composable
-fun DomBasedQuizLayout(
+fun DomBasedQuiz(
     quizState: QuizState,
     submitAnswer: (selectedAnswer: QuizLocation) -> Unit,
     playAgain: () -> Unit

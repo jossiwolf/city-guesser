@@ -1,12 +1,14 @@
-package common.lce
+package lce
 
 import androidx.compose.runtime.Composable
-import org.jetbrains.compose.web.dom.Progress
+
+@Composable
+expect fun DefaultLceLoadingIndicator()
 
 @Composable
 inline fun <T> LceDataView(
     state: Lce<T>,
-    loading: @Composable () -> Unit = { Progress() },
+    loading: @Composable () -> Unit = { DefaultLceLoadingIndicator() },
     content: @Composable (data: T) -> Unit
 ) {
     when (state) {
